@@ -34,7 +34,8 @@ defmodule Jolteon.Mixfile do
       {:cowboy, "~> 1.0.0"},
       {:plug, "~> 1.0"},
       {:httpotion, "~> 3.0.0"},
-      {:poison, "~> 2.0" }
+      {:poison, "~> 2.0" },
+      {:exrm, "~> 1.0.5"}
    ]
   end
 end
