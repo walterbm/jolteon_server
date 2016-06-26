@@ -19,9 +19,9 @@ defmodule Jolteon do
   end
 
   get "/yellow" do
-    request = HTTPotion.post "https://api.particle.io/v1/devices/53ff74066667574819350967/yellowLED", [
+    request = HTTPotion.post "https://api.particle.io/v1/devices/#{System.get_env("PHOTON_ID")}/yellowLED", [
       body:
-        "access_token=" <> URI.encode_www_form("879e1dfd2f00fa3def551cd4645260eb4c2d84ef"),
+        "access_token=" <> URI.encode_www_form(System.get_env("PHOTON_ACCESS_TOKEN")),
       headers: [ "Content-Type": "application/x-www-form-urlencoded" ]
     ]
 
