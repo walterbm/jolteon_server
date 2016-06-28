@@ -1,5 +1,5 @@
 // ------------
-// Blink RED and YELLO LEDs
+// Blink a RED and YELLOW LEDs
 // ------------
 
 
@@ -12,6 +12,7 @@ void setup() {
   pinMode(yellowLED, OUTPUT);
 
   Particle.function("yellowLED",ledToggle);
+  Particle.function("LEDstatus",ledStatus);
 
   digitalWrite(redLED, LOW);
   digitalWrite(yellowLED, LOW);
@@ -31,6 +32,21 @@ void loop() {
 
 }
 
+int ledStatus(String command) {
+    switch (digitalRead(yellowLED)) {
+    case HIGH:
+        return 1;
+        break;
+    case LOW:
+        return 0;
+        break;
+    default:
+        return -1;
+        break;
+  }
+
+}
+
 int ledToggle(String command) {
 
     if (digitalRead(yellowLED) == HIGH) {
@@ -43,4 +59,3 @@ int ledToggle(String command) {
         return -1;
     }
 }
-
