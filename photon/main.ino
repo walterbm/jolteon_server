@@ -1,5 +1,8 @@
+// This #include statement was automatically added by the Particle IDE.
+#include "neopixel/neopixel.h"
+
 // ------------
-// Blink a RED and YELLOW LEDs
+// Blink a RED and YELLOW LED
 // ------------
 
 
@@ -13,6 +16,8 @@ void setup() {
 
   Particle.function("yellowLED",ledToggle);
   Particle.function("LEDstatus",ledStatus);
+  Particle.function("ls",lsON);
+  Particle.function("ls_rgb",lsRGB);
 
   digitalWrite(redLED, LOW);
   digitalWrite(yellowLED, LOW);
@@ -58,4 +63,12 @@ int ledToggle(String command) {
     } else {
         return -1;
     }
+}
+
+int lsON(String command) {
+    return 1;
+}
+
+int lsRGB(String command) {
+    return 1;
 }
