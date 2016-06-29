@@ -20,56 +20,50 @@ defmodule Jolteon do
   end
 
   get "/yellow" do
-    request = HTTPotion.post "https://api.particle.io/v1/devices/#{System.get_env("PHOTON_ID")}/yellowLED", [
-      body:
-        "access_token=" <> URI.encode_www_form(System.get_env("PHOTON_ACCESS_TOKEN")),
-      headers: [ "Content-Type": "application/x-www-form-urlencoded" ]
-    ]
+    request = photon_request("/yellowLED")
 
     response = Poison.decode!(request.body)
 
-    conn
-      |> put_resp_content_type("application/json")
-      |> send_resp(200, Poison.encode! (
-         %{
-           led: "yellow",
-           success: HTTPotion.Response.success?(request),
-           response: response,
-           on: response["return_value"]
-         }
-       ))
+    conn |> ok_response(
+      %{
+        led: "yellow",
+        success: HTTPotion.Response.success?(request),
+        response: response,
+        on: response["return_value"]
+      }
+    )
   end
 
-   get "/yellow_status" do
-     request = HTTPotion.post "https://api.particle.io/v1/devices/#{System.get_env("PHOTON_ID")}/LEDstatus", [
-      body:
-        "access_token=" <> URI.encode_www_form(System.get_env("PHOTON_ACCESS_TOKEN")),
-      headers: [ "Content-Type": "application/x-www-form-urlencoded" ]
-    ]
+  get "/yellow_status" do
+    request = photon_request("/LEDstatus")
 
     response = Poison.decode!(request.body)
 
     case response["return_value"] do
       1 ->
-        conn
-        |> put_resp_content_type("application/json")
-        |> send_resp(200, Poison.encode! (%{ led: "yellow", on: true}))
-
+        conn |> ok_response(%{ led: "yellow", on: true})
       0 ->
-        conn
-        |> put_resp_content_type("application/json")
-        |> send_resp(200, Poison.encode! (%{ led: "yellow", on: false}))
-
+        conn |> ok_response(%{ led: "yellow", on: false})
       _ ->
-        conn
-        |> put_resp_content_type("application/json")
-        |> send_resp(200, Poison.encode! (%{ response: response}))
+        conn |> ok_response(%{ response: response})
     end
   end
 
   post "ledstrip" do
     body = Map.take(conn.params, ["r", "g", "b", "activate"])
-    led_commands(conn, to_keyword_list(body))
+
+    cond do
+      Map.has_key?(body,"activate") ->
+        request = photon_request("/ls", body["activate"])
+        response = Poison.decode!(request.body)
+        conn |> ok_response(%{on: body["activate"], response: response})
+      Map.keys(body) == ["b", "g", "r"] ->
+        request = photon_request("/ls_rgb", Enum.join([body["r"],body["g"],body["b"]],","))
+        response = Poison.decode!(request.body)
+        conn |> ok_response(%{rgb: Enum.join([body["r"],body["g"],body["b"]],","), response: response})
+      true ->
+        conn |> ok_response(%{error: "fuck you"})
+    end
   end
 
   post "test" do
@@ -78,18 +72,31 @@ defmodule Jolteon do
     |> send_resp(200, Poison.encode! (%{ your_json: conn.params}))
   end
 
-
   match _ do
     send_resp(conn, 404, "Does Not Exist")
   end
 
-  defp to_keyword_list(map) do
-    Enum.map(map, fn({key, value}) -> {String.to_atom(key), value} end)
-  end
-
-  defp led_commands(conn, commands) do
+  defp ok_response(conn, response) do
     conn
     |> put_resp_content_type("application/json")
-    |> send_resp(200, Poison.encode! (%{ response: "lol"}))
+    |> send_resp( 200, Poison.encode!(response) )
   end
+
+  defp photon_request(endpoint) do
+    HTTPotion.post "https://api.particle.io/v1/devices/#{System.get_env("PHOTON_ID")}#{endpoint}", [
+      body:
+        "access_token=" <> URI.encode_www_form(System.get_env("PHOTON_ACCESS_TOKEN")),
+      headers: [ "Content-Type": "application/x-www-form-urlencoded" ]
+    ]
+  end
+
+  defp photon_request(endpoint, params) do
+    HTTPotion.post "https://api.particle.io/v1/devices/#{System.get_env("PHOTON_ID")}#{endpoint}", [
+      body:
+        "access_token=" <> URI.encode_www_form(System.get_env("PHOTON_ACCESS_TOKEN")) <>
+        "&params=" <> URI.encode_www_form("#{params}"),
+      headers: [ "Content-Type": "application/x-www-form-urlencoded" ]
+    ]
+  end
+
  end
