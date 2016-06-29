@@ -5,6 +5,7 @@ defmodule Jolteon do
   use Plug.Router
   alias Plug.Adapters.Cowboy
 
+  plug Plug.Parsers, parsers: [:json], json_decoder: Poison
   plug :match
   plug :dispatch
 
@@ -64,11 +65,31 @@ defmodule Jolteon do
         |> put_resp_content_type("application/json")
         |> send_resp(200, Poison.encode! (%{ response: response}))
     end
-   end
+  end
+
+  post "ledstrip" do
+    body = Map.take(conn.params, ["r", "g", "b", "activate"])
+    led_commands(conn, to_keyword_list(body))
+  end
+
+  post "test" do
+    conn
+    |> put_resp_content_type("application/json")
+    |> send_resp(200, Poison.encode! (%{ your_json: conn.params}))
+  end
 
 
   match _ do
     send_resp(conn, 404, "Does Not Exist")
   end
- end
 
+  defp to_keyword_list(map) do
+    Enum.map(map, fn({key, value}) -> {String.to_atom(key), value} end)
+  end
+
+  defp led_commands(conn, commands) do
+    conn
+    |> put_resp_content_type("application/json")
+    |> send_resp(200, Poison.encode! (%{ response: "lol"}))
+  end
+ end
