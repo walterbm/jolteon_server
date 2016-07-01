@@ -33,7 +33,6 @@ void setup() {
 
 void loop() {
     digitalWrite(RED_LED_PIN, HIGH);
-    rainbow(20);
 }
 
 int ledStatus(String command) {
@@ -67,7 +66,7 @@ int ledToggle(String command) {
 int lsON(String command) {
     if (command == "true"){
         strip.setBrightness(200);
-        strip.show();
+        changeColor(255, 255, 255);
         return 1;
     } else if (command == "false") {
         strip.setBrightness(0);
@@ -79,7 +78,20 @@ int lsON(String command) {
 }
 
 int lsRGB(String command) {
-    return 1;
+    int r, g, b;
+
+    if (sscanf(command, "%d,%d,%d", &r, &g, &b) == 3) {
+        changeColor(r,g,b);
+        return 1;
+    }
+    return 0;
+}
+
+void changeColor(int red, int green, int blue) {
+    for(int i=0; i<strip.numPixels(); i++) {
+        strip.setPixelColor(i, red, green, blue);
+    }
+    strip.show();
 }
 
 void rainbow(uint8_t wait) {
