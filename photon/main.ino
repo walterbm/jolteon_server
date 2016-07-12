@@ -1,7 +1,5 @@
 #include "neopixel/neopixel.h"
 
-#define PIN 6
-
 // ------------
 // JOLTEON
 // ------------
